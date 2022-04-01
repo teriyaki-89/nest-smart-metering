@@ -1,0 +1,39 @@
+variables:
+  ARTIFACT_PATH: node_modules
+  ARTIFACT_PATH1: dist
+  ARTIFACT_PATH2: coverage
+
+
+stages:
+  - build
+  - sonar-scanner
+  - containerize
+
+include:
+  - project: 'devops/gitlab-ci-templates'
+    file: 'build/node/node-14.yml'
+  - project: 'devops/gitlab-ci-templates'
+    file: 'sonar/sonar-node.yml'
+  - project: 'devops/gitlab-ci-templates'
+    file: 'containerize/docker.yml'
+
+
+build:
+  artifacts:
+    when: always
+    expire_in: 60 minutes
+    paths:
+      - $ARTIFACT_PATH
+      - $ARTIFACT_PATH1
+      - $ARTIFACT_PATH2
+  script:
+    - npm install
+    - npm run build 
+    - npm run test:cov
+    - cp /builds/iot/smartmeterclient/coverage/test-report.xml $ARTIFACT_PATH/
+
+
+
+
+
+
